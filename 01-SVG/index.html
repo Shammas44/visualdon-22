@@ -1,37 +1,106 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
-    <script src="js/script.js" async></script>
 
-    <title>1-SVG</title>
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <script src="js/script.js" async></script>
 
-    <h1>Dessiner des formes</h1>
-    <h2>Rectangle</h2>
+  <title>1-SVG</title>
+</head>
 
-    <h2>Donut</h2>
+<body>
+
+  <h1>Dessiner des formes</h1>
+  <h2>Rectangle</h2>
+  <svg>
+    <rect id="rect" width="400" height="100" fill="red" />
+  </svg>
+  <h2>Donut</h2>
+  <svg>
+    <g>
+      <circle id="donut" cx="75" cy="75" r="60" stroke="black" stroke-width="3" fill="transparent" />
+      <circle cx="75" cy="75" r="30" stroke="black" stroke-width="3" fill="transparent" />
+    </g>
+  </svg>
+
+  <h2>Ligne</h2>
+  <svg>
+    <line x1="20" y1="50" x2="50" y2="275" width="60" style="stroke:rgb(255,0,0);stroke-width:2" />
+  </svg>
+
+  <h2>Path</h2>
+  <div style="display:flex;">
+
+    <svg width="100">
+      <path d="M 0 100 H 50 V 50 H 0 V 0 H 50 " fill="none" style="stroke:rgb(255,0,0);stroke-width:10" />
+      <circle r="5" fill="blue">
+        <animateMotion dur="10s" repeatCount="indefinite" path="M 0 100 H 50 V 50 H 0 V 0 H 50 " />
+      </circle>
+    </svg>
+    <svg width="100">
+      <path d="M 0 100 H 50 H 0 V 50 H 50 H 0 V 0 H 50 " fill="none" style="stroke:rgb(255,0,0);stroke-width:10" />
+    </svg>
+    <svg width="100">
+      <path d="M 0 100 H 50 V 50 H 0 V 100 V 50 V 0 H 50 V 50" fill="none"
+        style="stroke:rgb(255,0,0);stroke-width:10" />
+    </svg>
+    <svg width="100">
+      <path d="M 0 100 V 0 H 50 V 50 H 0 H 50 V 100" fill="none" style="stroke:rgb(255,0,0);stroke-width:10" />
+    </svg>
+    <svg width="100">
+      <path d="M 0 100 H 50 V 50 H 0 V 0 H 50 " fill="none" style="stroke:rgb(255,0,0);stroke-width:10" />
+    </svg>
+    <svg width="100">
+      <path d="M 0 0 H 50 H 25 V 100 " fill="none" style="stroke:rgb(255,0,0);stroke-width:10" />
+    </svg>
+    <svg width="100">
+      <path d="M 25 0 V 100" fill="none" style="stroke:rgb(255,0,0);stroke-width:10" />
+    </svg>
+    <svg width="100">
+      <path d="M 0 100 H 50 H 0 V 50 H 50 H 0 V 0 H 50 " fill="none" style="stroke:rgb(255,0,0);stroke-width:10" />
+    </svg>
+    <svg width="100">
+      <path d="M 0 100 V 0 L 50 100 V 0" fill="none" style="stroke:rgb(255,0,0);stroke-width:10" />
+    </svg>
+  </div>
 
 
-    <h2>Ligne</h2>
+  <h1>Animer des formes</h1>
+
+  <h2>On click</h2>
+
+  <h2>On hover</h2>
+
+  <h2>Prenez la première lettre de votre prénom que vous avez créée ci-dessus. Faite bouger une forme de votre choix le
+    long de la lettre</h2>
 
 
-    <h2>Path</h2>
+</body>
+<script>
+  const rect = document.querySelector('#rect')
+  rect.addEventListener('click', event => {
+    const actualColor = event.target.attributes.fill.value;
+    if (actualColor == 'red') {
+      event.target.setAttribute('fill', 'blue')
+    } else {
+      event.target.setAttribute('fill', 'red')
+    }
+  })
+  const donut = document.querySelector('#donut')
+  donut.addEventListener('mouseover', event => {
+    const currentR = parseInt(event.target.attributes.r.value)
+    console.log(currentR)
+    event.target.setAttribute('r', currentR + 10)
+  })
+  donut.addEventListener('mouseleave', event => {
+    const currentR = parseInt(event.target.attributes.r.value)
+    console.log(currentR)
+    event.target.setAttribute('r', currentR - 10)
+  })
+</script>
 
-
-    <h1>Animer des formes</h1>
-
-    <h2>On click</h2>
-
-    <h2>On hover</h2>
-
-    <h2>Prenez la première lettre de votre prénom que vous avez créée ci-dessus. Faite bouger une forme de votre choix le long de la lettre</h2>
-
-
-  </body>
 </html>
