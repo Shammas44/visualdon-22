@@ -1,8 +1,96 @@
-import * as d3 from 'd3'
+import * as d3 from "d3";
+import income from "../data/income_per_person.csv";
+import life from "../data/life_expectancy_years.csv";
+import pop from "../data/population_total.csv";
 
-// Pour importer les données
-// import file from '../data/data.csv'
+const life2021 = life.map((year) => {
+	return { country: year["country"], life: year["2021"] };
+});
+const pop2021 = pop.map((year) => {
+	return { country: year["country"], pop: year["2021"] };
+});
+const income2021 = income.map((year) => {
+	return { country: year["country"], income: year["2021"] };
+});
 
+let data = [];
+for (let i = 0; i < income2021.length; i++) {
+	data.push({
+		country: income2021[i].country,
+		pop: cleanData(pop2021[i].pop),
+		life: cleanData(life2021[i].life),
+		income: cleanData(income2021[i].income),
+	});
+}
 
+function cleanData(data) {
+	if (isNaN(data)) {
+		if (data.includes("k")) {
+			const n = data.split("k")[0];
+			data = Number.parseFloat(n) * 1000;
+		} else if (data.includes("M")) {
+			const n = data.split("M")[0];
+			data = Number.parseFloat(n) * 1000000;
+		} else if (data.includes("B")) {
+			const n = data.split("B")[0];
+			data = Number.parseFloat(n) * 1000000000;
+		}
+	}
+	if (data == "") {
+		data = 0;
+	}
+	return data;
+}
 
+const xMax = data.reduce((previous, current) => {
+	return current.income > previous.income ? current : previous;
+}).income;
+const yMax = data.reduce((previous, current) => {
+	return current.life > previous.life ? current : previous;
+}).life;
+const rMax = data.reduce((previous, current) => {
+	return current.pop > previous.pop ? current : previous;
+}).pop;
 
+const svg = d3.select("body").append("svg");
+const margin = { top: 20, right: 20, bottom: 20, left: 40 },
+	width = 800 - margin.left - margin.right,
+	height = 800 - margin.top - margin.bottom;
+const newHeight = height + 10;
+
+const x = d3
+	.scaleLinear()
+	.domain([0, xMax / 100 + xMax])
+	.range([0, width]);
+const y = d3
+	.scaleLinear()
+	.domain([0, yMax / 100 + yMax])
+	.range([height, 0]);
+const r = d3.scaleSqrt().domain([0, rMax]).range([0, 40]);
+
+svg
+	.attr("width", width + margin.left + margin.right)
+	.attr("height", height + margin.top + margin.bottom)
+	.style("margin", "50px");
+
+svg
+	.append("g")
+	.attr("transform", "translate(20," + newHeight + ")")
+	.call(d3.axisBottom(x));
+
+svg
+	.append("g")
+	.attr("transform", "translate(" + 20 + ",10)")
+	.call(d3.axisLeft(y));
+
+svg
+	.selectAll("circle")
+	.data(data)
+	.enter()
+	.append("circle")
+	.attr("cx", (d) => x(d.income))
+	.attr("cy", (d) => y(d.life))
+	.attr("r", (d) => r(d.pop))
+	.style("fill", "rgba(100, 0, 0, 0.4)")
+	.attr("transform", "translate(100, 10)")
+	.attr("class", (d) => `countryCircle ${d.country}`);
