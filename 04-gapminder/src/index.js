@@ -1,7 +1,11 @@
 import * as d3 from "d3";
+import { csvFormatBody } from "d3";
 import income from "../data/income_per_person.csv";
 import life from "../data/life_expectancy_years.csv";
 import pop from "../data/population_total.csv";
+// ==========================================================================
+//   0. BASIC GRAPH
+// ==========================================================================
 
 const life2021 = life.map((year) => {
 	return { country: year["country"], life: year["2021"] };
@@ -94,3 +98,93 @@ svg
 	.style("fill", "rgba(100, 0, 0, 0.4)")
 	.attr("transform", "translate(100, 10)")
 	.attr("class", (d) => `countryCircle ${d.country}`);
+// ==========================================================================
+//   1. Map
+// ==========================================================================
+const legendWrapper = d3
+	.select("body")
+	.append("div")
+	.style("display", "flex")
+	.style("flex-direction", "column")
+	.style("align-items", "center")
+	.attr("class", "map");
+legendWrapper.append("h2").text("Life expectancy in year");
+const legend = legendWrapper
+	.append("div")
+	.attr("class", "legend")
+	.style("display", "flex")
+	.style("flex-direction", "row");
+// set data
+const countries = new Map();
+data.forEach((d) => {
+	countries.set(d.country, d);
+});
+// create svg
+const width2 = 800;
+const height2 = 600;
+const svgMap = legendWrapper
+	.append("svg")
+	.attr("width", width2)
+	.attr("height", height2);
+// Map and projection
+const projection = d3
+	.geoNaturalEarth1()
+	.scale(width2 / 1.3 / Math.PI - 50)
+	.translate([width2 / 2, height2 / 2]);
+// color interval
+const intervalsCount = 9; // max value is 9
+const domainInterval = yMax / intervalsCount;
+const intervals = [];
+for (let i = 0; i <= intervalsCount; i++) {
+	if (i != 0) {
+		intervals.push(i * domainInterval);
+	}
+}
+// color scale
+const colorScale = d3
+	.scaleThreshold()
+	.domain([...intervals])
+	.range(d3.schemeOranges[intervalsCount]);
+// Load external data and boot
+d3.json(
+	"https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
+).then(function (topo) {
+	// Draw the map
+	svgMap
+		.append("g")
+		.selectAll("path")
+		.data(topo.features)
+		.join("path")
+		.attr("fill", function (d) {
+			return colorScale(countries.get(d.properties.name)?.life);
+		})
+		.attr("d", d3.geoPath().projection(projection))
+		.style("stroke", "#fff");
+});
+// Draw the legend
+let i = 0;
+intervals.forEach((d) => {
+	legend
+		.append("div")
+		.style("background-color", colorScale(d))
+		.style("width", "50px")
+		.style("height", "30px")
+		.style("display", "flex")
+		.style("justify-content", "center")
+		.style("align-items", "center")
+		.append("text")
+		.text(intervals[i].toFixed(1))
+		.style("color", "white");
+	i++;
+});
+legend
+	.append("div")
+	.style("width", "50px")
+	.style("background-color", "black")
+	.style("height", "30px")
+	.style("display", "flex")
+	.style("justify-content", "center")
+	.style("align-items", "center")
+	.append("text")
+	.text("no data")
+	.style("color", "white");
