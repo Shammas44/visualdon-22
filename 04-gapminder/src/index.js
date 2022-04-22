@@ -28,6 +28,7 @@ for (let i = 0; i < income2021.length; i++) {
 }
 
 function cleanData(data) {
+	if (typeof data === "undefined") return 0;
 	if (isNaN(data)) {
 		if (data.includes("k")) {
 			const n = data.split("k")[0];
@@ -46,13 +47,13 @@ function cleanData(data) {
 	return data;
 }
 
-const xMax = data.reduce((previous, current) => {
+let xMax = data.reduce((previous, current) => {
 	return current.income > previous.income ? current : previous;
 }).income;
-const yMax = data.reduce((previous, current) => {
+let yMax = data.reduce((previous, current) => {
 	return current.life > previous.life ? current : previous;
 }).life;
-const rMax = data.reduce((previous, current) => {
+let rMax = data.reduce((previous, current) => {
 	return current.pop > previous.pop ? current : previous;
 }).pop;
 
@@ -188,3 +189,95 @@ legend
 	.append("text")
 	.text("no data")
 	.style("color", "white");
+
+// ==========================================================================
+//   3. Animation
+// ==========================================================================
+
+function getData(currentYear) {
+	const currentLife = life.map((year) => {
+		return { country: year["country"], life: year[currentYear] };
+	});
+	const currentPop = pop.map((year) => {
+		return { country: year["country"], pop: year[currentYear] };
+	});
+	const currentIncome = income.map((year) => {
+		return { country: year["country"], income: year[currentYear] };
+	});
+	const nextLife = life.map((year) => {
+		return { country: year["country"], life: year[currentYear + 1] };
+	});
+	const nextPop = pop.map((year) => {
+		return { country: year["country"], pop: year[currentYear + 1] };
+	});
+	const nextIncome = income.map((year) => {
+		return { country: year["country"], income: year[currentYear + 1] };
+	});
+
+	let data = [];
+	for (let i = 0; i < income.length; i++) {
+		data.push({
+			country: currentIncome[i].country,
+			currentPop: cleanData(currentPop[i].pop),
+			currentLife: cleanData(currentLife[i].life),
+			currentIncome: cleanData(currentIncome[i].income),
+			nextPop: cleanData(nextPop[i].pop),
+			nextLife: cleanData(nextLife[i].life),
+			nextIncome: cleanData(nextIncome[i].income),
+		});
+	}
+	return data;
+}
+
+// TODO: comprendre pourquoi .transition(t) ne fonctionne pas
+let t = d3.transition().duration(1000).ease(d3.easeLinear);
+const firstYear = 1980;
+const lastYear = 2021;
+const svg2 = d3.select("body").append("svg");
+let currentYear = firstYear;
+
+svg2
+	.attr("width", width + margin.left + margin.right)
+	.attr("height", height + margin.top + margin.bottom)
+	.style("margin", "50px");
+
+svg2
+	.append("g")
+	.attr("transform", "translate(20," + newHeight + ")")
+	.call(d3.axisBottom(x));
+
+svg2
+	.append("g")
+	.attr("transform", "translate(" + 20 + ",10)")
+	.call(d3.axisLeft(y));
+
+(function draw() {
+	const data = getData(currentYear);
+
+	svg2
+		.selectAll("circle")
+		.data(data)
+		.join(
+			(enter) =>
+				enter
+					.append("circle")
+					.attr("cx", (d) => x(d.currentIncome))
+					.attr("cy", (d) => y(d.currentLife))
+					.attr("r", (d) => r(d.currentPop))
+					.attr("class", (d) => `countryCircle ${d.country}`),
+			(update) =>
+				update
+					.transition()
+					.duration(1000)
+					.attr("cx", (d) => x(d.nextIncome))
+					.attr("cy", (d) => y(d.nextLife))
+					.attr("r", (d) => r(d.nextPop)),
+			(exit) => exit.attr("r", (d) => r(d.nextPop)).remove()
+		)
+		.style("fill", "rgba(100, 0, 0, 0.4)")
+		.attr("transform", "translate(100, 10)");
+	if (currentYear < lastYear) {
+		currentYear++;
+		setTimeout(draw, 1000);
+	}
+})();
