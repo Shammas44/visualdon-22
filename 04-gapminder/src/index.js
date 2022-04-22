@@ -204,26 +204,14 @@ function getData(currentYear) {
 	const currentIncome = income.map((year) => {
 		return { country: year["country"], income: year[currentYear] };
 	});
-	const nextLife = life.map((year) => {
-		return { country: year["country"], life: year[currentYear + 1] };
-	});
-	const nextPop = pop.map((year) => {
-		return { country: year["country"], pop: year[currentYear + 1] };
-	});
-	const nextIncome = income.map((year) => {
-		return { country: year["country"], income: year[currentYear + 1] };
-	});
 
 	let data = [];
 	for (let i = 0; i < income.length; i++) {
 		data.push({
 			country: currentIncome[i].country,
-			currentPop: cleanData(currentPop[i].pop),
-			currentLife: cleanData(currentLife[i].life),
-			currentIncome: cleanData(currentIncome[i].income),
-			nextPop: cleanData(nextPop[i].pop),
-			nextLife: cleanData(nextLife[i].life),
-			nextIncome: cleanData(nextIncome[i].income),
+			pop: cleanData(currentPop[i].pop),
+			life: cleanData(currentLife[i].life),
+			income: cleanData(currentIncome[i].income),
 		});
 	}
 	return data;
@@ -261,18 +249,18 @@ svg2
 			(enter) =>
 				enter
 					.append("circle")
-					.attr("cx", (d) => x(d.currentIncome))
-					.attr("cy", (d) => y(d.currentLife))
-					.attr("r", (d) => r(d.currentPop))
+					.attr("cx", (d) => x(d.income))
+					.attr("cy", (d) => y(d.life))
+					.attr("r", (d) => r(d.pop))
 					.attr("class", (d) => `countryCircle ${d.country}`),
 			(update) =>
 				update
 					.transition()
 					.duration(1000)
-					.attr("cx", (d) => x(d.nextIncome))
-					.attr("cy", (d) => y(d.nextLife))
-					.attr("r", (d) => r(d.nextPop)),
-			(exit) => exit.attr("r", (d) => r(d.nextPop)).remove()
+					.attr("cx", (d) => x(d.income))
+					.attr("cy", (d) => y(d.life))
+					.attr("r", (d) => r(d.pop)),
+			(exit) => exit.attr("r", (d) => r(d.pop)).remove()
 		)
 		.style("fill", "rgba(100, 0, 0, 0.4)")
 		.attr("transform", "translate(100, 10)");
